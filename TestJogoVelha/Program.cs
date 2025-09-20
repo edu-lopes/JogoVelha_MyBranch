@@ -6,6 +6,7 @@ Grupo:
 */
 
 // Importações do código
+using Spectre.Console;
 using System.Threading;
 using System.Linq;
 
@@ -21,8 +22,7 @@ for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantid
     }
 }
 
-// Lógica - Ranking with dicionary
-Dictionary<string, int> ranking = new Dictionary<string, int>() //Key guarda nome. Value guarda vitórias
+Dictionary<string, int> ranking = new Dictionary<string, int>()
 {
     {"X", 0},
     {"O", 0},
@@ -30,18 +30,61 @@ Dictionary<string, int> ranking = new Dictionary<string, int>() //Key guarda nom
     {"Velha", 0}
 };
 
+Dictionary<string, Color> coresJogadores = new()
+{
+    {"X", Color.Red},
+    {"O", Color.Blue},
+    {"Bot", Color.Yellow},
+    {"Velha", Color.Grey}
+};
+
+Random random = new();
+
+
+void MostrarRanking(Dictionary<string, int> ranking, bool noMenu = false)
+{
+    if (!noMenu) Console.Clear();
+
+    var chart = new BarChart()
+        .Width(60)
+        .Label("[green]Ranking de Vitórias[/]");
+
+    foreach (var kvp in ranking)
+    {
+        if (!coresJogadores.ContainsKey(kvp.Key))
+        {
+            coresJogadores[kvp.Key] = new Color(
+                (byte)random.Next(50, 256),
+                (byte)random.Next(50, 256),
+                (byte)random.Next(50, 256)
+            );
+        }
+
+        chart.AddItem(kvp.Key, kvp.Value, coresJogadores[kvp.Key]);
+    }
+
+    AnsiConsole.Write(chart);
+
+    if (!noMenu)
+    {
+        Console.WriteLine("\nPressione qualquer tecla para continuar...");
+        Console.ReadKey();
+        Console.Clear();
+    }
+}
+
+
+
+
 // Começo do menu
 while (true)
 {
     Console.WriteLine("JOGO DA VELHA EM C#");
     Console.WriteLine();
 
-    // Printa o ranking com os jogadores
-    Console.WriteLine("RANKING");
-    foreach (KeyValuePair<string, int> r in ranking)
-    {
-        Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
-    }
+    //Ranking Somente em Texto (Sem o Gráfico)
+    MostrarRanking(ranking, true);
+
 
     // Opção de querer jogar ou não
     string scannerMenu;
@@ -83,13 +126,14 @@ while (true)
             // Nome do jogador vai para o ranking, mas antes é feio uma verificação pra ver se ja não existe
             if (ranking.ContainsKey(primeiroJogador))
             {
-                Console.WriteLine($"Bem vindo novamente {primeiroJogador}. Você tem {ranking[primeiroJogador]} vitórias");
-                Console.WriteLine();
+                Console.WriteLine($"Bem vindo novamente {primeiroJogador}!");
+                MostrarRanking(ranking, true);
             }
             else
             {
                 ranking.Add(primeiroJogador, 0);
             }
+
 
             // Entrada segundo jogador
             Console.Write("Digite o nome do segundo jogador(O): ");
@@ -99,8 +143,8 @@ while (true)
             // Nome do jogador vai para o ranking, mas antes é feio uma verificação pra ver se ja não existe
             if (ranking.ContainsKey(segundoJogador))
             {
-                Console.WriteLine($"Bem vindo novamente {segundoJogador}. Você tem {ranking[segundoJogador]} vitórias");
-                Console.WriteLine();
+                Console.WriteLine($"Bem vindo novamente {segundoJogador}!");
+                MostrarRanking(ranking, true);
             }
             else
             {
@@ -120,14 +164,32 @@ while (true)
             // Fala de quem é a vez
             if (vezJogador == 0)
             {
-                // Printando a matriz
+                // Printando a matriz com cores
                 for (int l = 0; l < matriz.GetLength(0); l++)
                 {
                     Console.WriteLine("  ___    ___    ___");
                     for (int c = 0; c < matriz.GetLength(1); c++)
                     {
-                        Console.Write(" | " + matriz[l, c] + " | ");
-                        //Thread.Sleep(50); // só para efeito visual
+                        Console.Write(" | ");
+
+                        if (matriz[l, c] == "X")
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                            Console.Write("X");
+                            Console.ResetColor();
+                        }
+                        else if (matriz[l, c] == "O")
+                        {
+                            Console.ForegroundColor = ConsoleColor.Blue;  // O em azul
+                            Console.Write("O");
+                            Console.ResetColor();
+                        }
+                        else
+                        {
+                            Console.Write(matriz[l, c]); // número normal
+                        }
+
+                        Console.Write(" | ");
                     }
                     Console.WriteLine();
                 }
@@ -137,14 +199,32 @@ while (true)
             }
             else
             {
-                // Printando a matriz
+                // Printando a matriz com cores
                 for (int l = 0; l < matriz.GetLength(0); l++)
                 {
                     Console.WriteLine("  ___    ___    ___");
                     for (int c = 0; c < matriz.GetLength(1); c++)
                     {
-                        Console.Write(" | " + matriz[l, c] + " | ");
-                        //Thread.Sleep(50); // só para efeito visual
+                        Console.Write(" | ");
+
+                        if (matriz[l, c] == "X")
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                            Console.Write("X");
+                            Console.ResetColor();
+                        }
+                        else if (matriz[l, c] == "O")
+                        {
+                            Console.ForegroundColor = ConsoleColor.Blue;  // O em azul
+                            Console.Write("O");
+                            Console.ResetColor();
+                        }
+                        else
+                        {
+                            Console.Write(matriz[l, c]); // número normal
+                        }
+
+                        Console.Write(" | ");
                     }
                     Console.WriteLine();
                 }
@@ -393,20 +473,38 @@ while (true)
                 if (matriz[0, 0] == "X" && matriz[0, 1] == "X" && matriz[0, 2] == "X")
                 {
                     Console.WriteLine("O vencedor é o jogador: " + primeiroJogador);
-                    // Printando a matriz
+                    // Printando a matriz com cores
                     for (int l = 0; l < matriz.GetLength(0); l++)
                     {
                         Console.WriteLine("  ___    ___    ___");
                         for (int c = 0; c < matriz.GetLength(1); c++)
                         {
-                            Console.Write(" | " + matriz[l, c] + " | ");
-                            //Thread.Sleep(50); // só para efeito visual
+                            Console.Write(" | ");
+
+                            if (matriz[l, c] == "X")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                Console.Write("X");
+                                Console.ResetColor();
+                            }
+                            else if (matriz[l, c] == "O")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Blue;  // O em azul
+                                Console.Write("O");
+                                Console.ResetColor();
+                            }
+                            else
+                            {
+                                Console.Write(matriz[l, c]); // número normal
+                            }
+
+                            Console.Write(" | ");
                         }
                         Console.WriteLine();
                     }
                     Console.WriteLine("  ¯¯¯    ¯¯¯    ¯¯¯");
 
-                    // Soma pontuação no ranking
+                    // Atualiza pontuação
                     if (primeiroJogador == "X")
                     {
                         ranking["X"] += 1;
@@ -417,6 +515,8 @@ while (true)
                         ranking["X"] += 1;
                     }
 
+
+
                     // Printa o ranking com os jogadores
                     Console.WriteLine("RANKING");
                     foreach (KeyValuePair<string, int> r in ranking)
@@ -424,54 +524,120 @@ while (true)
                         Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                     }
 
-                    // Lógica que pergunta se quer ou não continuar
-                    Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                    scannerDecision = Console.ReadLine();
+                    Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                    string verRanking = Console.ReadLine();
 
-                    if (scannerDecision == "1") // Caso queira
+                    if (verRanking == "1")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        MostrarRanking(ranking);
+
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = false;
-                        continue;
+                        else
+                        // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
-                    else
-                    // Caso queira voltar ao menu
+
+                    if (verRanking == "2")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = true;
+                        else
+                        // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
                 }
                 else
                 {
                     Console.WriteLine("O vencedor é o jogador: " + segundoJogador);
-                    // Printando a matriz
+                    // Printando a matriz com cores
                     for (int l = 0; l < matriz.GetLength(0); l++)
                     {
                         Console.WriteLine("  ___    ___    ___");
                         for (int c = 0; c < matriz.GetLength(1); c++)
                         {
-                            Console.Write(" | " + matriz[l, c] + " | ");
-                            //Thread.Sleep(50); // só para efeito visual
+                            Console.Write(" | ");
+
+                            if (matriz[l, c] == "X")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                Console.Write("X");
+                                Console.ResetColor();
+                            }
+                            else if (matriz[l, c] == "O")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Blue;  // O em azul
+                                Console.Write("O");
+                                Console.ResetColor();
+                            }
+                            else
+                            {
+                                Console.Write(matriz[l, c]); // número normal
+                            }
+
+                            Console.Write(" | ");
                         }
                         Console.WriteLine();
                     }
@@ -495,41 +661,88 @@ while (true)
                         Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                     }
 
-                    // Lógica que pergunta se quer ou não continuar
-                    Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                    scannerDecision = Console.ReadLine();
+                    Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                    string verRanking = Console.ReadLine();
 
-                    if (scannerDecision == "1") // Caso queira
+                    if (verRanking == "1")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        MostrarRanking(ranking);
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = false;
-                        continue;
+                        else // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
-                    else // Caso queira voltar ao menu
+
+                    if (verRanking == "2")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = true;
+                        else // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
+
                 }
 
             }
@@ -540,24 +753,38 @@ while (true)
                 if (matriz[1, 0] == "X" && matriz[1, 1] == "X" && matriz[1, 2] == "X")
                 {
                     Console.WriteLine("O vencedor é o jogador: " + primeiroJogador);
-                    if (matriz[0, 0] == "X" && matriz[1, 1] == "X" && matriz[2, 2] == "X")
+                    // Printando a matriz com cores
+                    for (int l = 0; l < matriz.GetLength(0); l++)
                     {
-                        Console.WriteLine("O vencedor é o jogador: " + primeiroJogador);
-                        // Printando a matriz
-                        for (int l = 0; l < matriz.GetLength(0); l++)
+                        Console.WriteLine("  ___    ___    ___");
+                        for (int c = 0; c < matriz.GetLength(1); c++)
                         {
-                            Console.WriteLine("  ___    ___    ___");
-                            for (int c = 0; c < matriz.GetLength(1); c++)
-                            {
-                                Console.Write(" | " + matriz[l, c] + " | ");
-                                //Thread.Sleep(50); // só para efeito visual
-                            }
-                            Console.WriteLine();
-                        }
-                        Console.WriteLine("  ¯¯¯    ¯¯¯    ¯¯¯");
-                    }
+                            Console.Write(" | ");
 
-                    // Soma pontuação no ranking
+                            if (matriz[l, c] == "X")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                Console.Write("X");
+                                Console.ResetColor();
+                            }
+                            else if (matriz[l, c] == "O")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Blue;  // O em azul
+                                Console.Write("O");
+                                Console.ResetColor();
+                            }
+                            else
+                            {
+                                Console.Write(matriz[l, c]); // número normal
+                            }
+
+                            Console.Write(" | ");
+                        }
+                        Console.WriteLine();
+                    }
+                    Console.WriteLine("  ¯¯¯    ¯¯¯    ¯¯¯");
+
+                    // Atualiza pontuação
                     if (primeiroJogador == "X")
                     {
                         ranking["X"] += 1;
@@ -568,6 +795,7 @@ while (true)
                         ranking["X"] += 1;
                     }
 
+
                     // Printa o ranking com os jogadores
                     Console.WriteLine("RANKING");
                     foreach (KeyValuePair<string, int> r in ranking)
@@ -575,53 +803,120 @@ while (true)
                         Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                     }
 
-                    // Lógica que pergunta se quer ou não continuar
-                    Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                    scannerDecision = Console.ReadLine();
+                    Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                    string verRanking = Console.ReadLine();
 
-                    if (scannerDecision == "1") // Caso queira
+                    if (verRanking == "1")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        MostrarRanking(ranking);
+
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = false;
-                        continue;
+                        else
+                        // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
-                    else // Caso queira voltar ao menu
+
+                    if (verRanking == "2")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = true;
+                        else
+                        // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
                 }
                 else
                 {
                     Console.WriteLine("O vencedor é o jogador: " + segundoJogador);
-                    // Printando a matriz
+                    // Printando a matriz com cores
                     for (int l = 0; l < matriz.GetLength(0); l++)
                     {
                         Console.WriteLine("  ___    ___    ___");
                         for (int c = 0; c < matriz.GetLength(1); c++)
                         {
-                            Console.Write(" | " + matriz[l, c] + " | ");
-                            //Thread.Sleep(50); // só para efeito visual
+                            Console.Write(" | ");
+
+                            if (matriz[l, c] == "X")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                Console.Write("X");
+                                Console.ResetColor();
+                            }
+                            else if (matriz[l, c] == "O")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Blue;  // O em azul
+                                Console.Write("O");
+                                Console.ResetColor();
+                            }
+                            else
+                            {
+                                Console.Write(matriz[l, c]); // número normal
+                            }
+
+                            Console.Write(" | ");
                         }
                         Console.WriteLine();
                     }
@@ -645,41 +940,88 @@ while (true)
                         Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                     }
 
-                    // Lógica que pergunta se quer ou não continuar
-                    Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                    scannerDecision = Console.ReadLine();
+                    Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                    string verRanking = Console.ReadLine();
 
-                    if (scannerDecision == "1") // Caso queira
+                    if (verRanking == "1")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        MostrarRanking(ranking);
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = false;
-                        continue;
+                        else // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
-                    else // Caso queira voltar ao menu
+
+                    if (verRanking == "2")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = true;
+                        else // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
+
                 }
 
             }
@@ -690,20 +1032,38 @@ while (true)
                 if (matriz[2, 0] == "X" && matriz[2, 1] == "X" && matriz[2, 2] == "X")
                 {
                     Console.WriteLine("O vencedor é o jogador: " + primeiroJogador);
-                    // Printando a matriz
+                    // Printando a matriz com cores
                     for (int l = 0; l < matriz.GetLength(0); l++)
                     {
                         Console.WriteLine("  ___    ___    ___");
                         for (int c = 0; c < matriz.GetLength(1); c++)
                         {
-                            Console.Write(" | " + matriz[l, c] + " | ");
-                            //Thread.Sleep(50); // só para efeito visual
+                            Console.Write(" | ");
+
+                            if (matriz[l, c] == "X")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                Console.Write("X");
+                                Console.ResetColor();
+                            }
+                            else if (matriz[l, c] == "O")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Blue;  // O em azul
+                                Console.Write("O");
+                                Console.ResetColor();
+                            }
+                            else
+                            {
+                                Console.Write(matriz[l, c]); // número normal
+                            }
+
+                            Console.Write(" | ");
                         }
                         Console.WriteLine();
                     }
                     Console.WriteLine("  ¯¯¯    ¯¯¯    ¯¯¯");
 
-                    // Soma pontuação no ranking
+                    // Atualiza pontuação
                     if (primeiroJogador == "X")
                     {
                         ranking["X"] += 1;
@@ -714,6 +1074,7 @@ while (true)
                         ranking["X"] += 1;
                     }
 
+
                     // Printa o ranking com os jogadores
                     Console.WriteLine("RANKING");
                     foreach (KeyValuePair<string, int> r in ranking)
@@ -721,53 +1082,120 @@ while (true)
                         Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                     }
 
-                    // Lógica que pergunta se quer ou não continuar
-                    Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                    scannerDecision = Console.ReadLine();
+                    Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                    string verRanking = Console.ReadLine();
 
-                    if (scannerDecision == "1") // Caso queira
+                    if (verRanking == "1")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        MostrarRanking(ranking);
+
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = false;
-                        continue;
+                        else
+                        // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
-                    else // Caso queira voltar ao menu
+
+                    if (verRanking == "2")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = true;
+                        else
+                        // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
                 }
                 else
                 {
                     Console.WriteLine("O vencedor é o jogador: " + segundoJogador);
-                    // Printando a matriz
+                    // Printando a matriz com cores
                     for (int l = 0; l < matriz.GetLength(0); l++)
                     {
                         Console.WriteLine("  ___    ___    ___");
                         for (int c = 0; c < matriz.GetLength(1); c++)
                         {
-                            Console.Write(" | " + matriz[l, c] + " | ");
-                            //Thread.Sleep(50); // só para efeito visual
+                            Console.Write(" | ");
+
+                            if (matriz[l, c] == "X")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                Console.Write("X");
+                                Console.ResetColor();
+                            }
+                            else if (matriz[l, c] == "O")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Blue;  // O em azul
+                                Console.Write("O");
+                                Console.ResetColor();
+                            }
+                            else
+                            {
+                                Console.Write(matriz[l, c]); // número normal
+                            }
+
+                            Console.Write(" | ");
                         }
                         Console.WriteLine();
                     }
@@ -791,43 +1219,89 @@ while (true)
                         Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                     }
 
-                    // Lógica que pergunta se quer ou não continuar
-                    Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                    scannerDecision = Console.ReadLine();
+                    Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                    string verRanking = Console.ReadLine();
 
-                    if (scannerDecision == "1") // Caso queira
+                    if (verRanking == "1")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        MostrarRanking(ranking);
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = false;
-                        continue;
+                        else // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
-                    else // Caso queira voltar ao menu
+
+                    if (verRanking == "2")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = true;
+                        else // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
+
                 }
-
             }
 
             // Primeiro caso de coluna(1,4 e 7)
@@ -836,20 +1310,38 @@ while (true)
                 if (matriz[0, 0] == "X" && matriz[1, 0] == "X" && matriz[2, 0] == "X")
                 {
                     Console.WriteLine("O vencedor é o jogador: " + primeiroJogador);
-                    // Printando a matriz
+                    // Printando a matriz com cores
                     for (int l = 0; l < matriz.GetLength(0); l++)
                     {
                         Console.WriteLine("  ___    ___    ___");
                         for (int c = 0; c < matriz.GetLength(1); c++)
                         {
-                            Console.Write(" | " + matriz[l, c] + " | ");
-                            //Thread.Sleep(50); // só para efeito visual
+                            Console.Write(" | ");
+
+                            if (matriz[l, c] == "X")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                Console.Write("X");
+                                Console.ResetColor();
+                            }
+                            else if (matriz[l, c] == "O")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Blue;  // O em azul
+                                Console.Write("O");
+                                Console.ResetColor();
+                            }
+                            else
+                            {
+                                Console.Write(matriz[l, c]); // número normal
+                            }
+
+                            Console.Write(" | ");
                         }
                         Console.WriteLine();
                     }
                     Console.WriteLine("  ¯¯¯    ¯¯¯    ¯¯¯");
 
-                    // Soma pontuação no ranking
+                    // Atualiza pontuação
                     if (primeiroJogador == "X")
                     {
                         ranking["X"] += 1;
@@ -860,6 +1352,7 @@ while (true)
                         ranking["X"] += 1;
                     }
 
+
                     // Printa o ranking com os jogadores
                     Console.WriteLine("RANKING");
                     foreach (KeyValuePair<string, int> r in ranking)
@@ -867,53 +1360,120 @@ while (true)
                         Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                     }
 
-                    // Lógica que pergunta se quer ou não continuar
-                    Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                    scannerDecision = Console.ReadLine();
+                    Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                    string verRanking = Console.ReadLine();
 
-                    if (scannerDecision == "1") // Caso queira
+                    if (verRanking == "1")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        MostrarRanking(ranking);
+
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = false;
-                        continue;
+                        else
+                        // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
-                    else // Caso queira voltar ao menu
+
+                    if (verRanking == "2")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = true;
+                        else
+                        // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
                 }
                 else
                 {
                     Console.WriteLine("O vencedor é o jogador: " + segundoJogador);
-                    // Printando a matriz
+                    // Printando a matriz com cores
                     for (int l = 0; l < matriz.GetLength(0); l++)
                     {
                         Console.WriteLine("  ___    ___    ___");
                         for (int c = 0; c < matriz.GetLength(1); c++)
                         {
-                            Console.Write(" | " + matriz[l, c] + " | ");
-                            //Thread.Sleep(50); // só para efeito visual
+                            Console.Write(" | ");
+
+                            if (matriz[l, c] == "X")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                Console.Write("X");
+                                Console.ResetColor();
+                            }
+                            else if (matriz[l, c] == "O")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Blue;  // O em azul
+                                Console.Write("O");
+                                Console.ResetColor();
+                            }
+                            else
+                            {
+                                Console.Write(matriz[l, c]); // número normal
+                            }
+
+                            Console.Write(" | ");
                         }
                         Console.WriteLine();
                     }
@@ -937,41 +1497,88 @@ while (true)
                         Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                     }
 
-                    // Lógica que pergunta se quer ou não continuar
-                    Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                    scannerDecision = Console.ReadLine();
+                    Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                    string verRanking = Console.ReadLine();
 
-                    if (scannerDecision == "1") // Caso queira
+                    if (verRanking == "1")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        MostrarRanking(ranking);
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = false;
-                        continue;
+                        else // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
-                    else // Caso queira voltar ao menu
+
+                    if (verRanking == "2")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = true;
+                        else // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
+
                 }
             }
 
@@ -981,20 +1588,38 @@ while (true)
                 if (matriz[0, 1] == "X" && matriz[1, 1] == "X" && matriz[2, 1] == "X")
                 {
                     Console.WriteLine("O vencedor é o jogador: " + primeiroJogador);
-                    // Printando a matriz
+                    // Printando a matriz com cores
                     for (int l = 0; l < matriz.GetLength(0); l++)
                     {
                         Console.WriteLine("  ___    ___    ___");
                         for (int c = 0; c < matriz.GetLength(1); c++)
                         {
-                            Console.Write(" | " + matriz[l, c] + " | ");
-                            //Thread.Sleep(50); // só para efeito visual
+                            Console.Write(" | ");
+
+                            if (matriz[l, c] == "X")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                Console.Write("X");
+                                Console.ResetColor();
+                            }
+                            else if (matriz[l, c] == "O")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Blue;  // O em azul
+                                Console.Write("O");
+                                Console.ResetColor();
+                            }
+                            else
+                            {
+                                Console.Write(matriz[l, c]); // número normal
+                            }
+
+                            Console.Write(" | ");
                         }
                         Console.WriteLine();
                     }
                     Console.WriteLine("  ¯¯¯    ¯¯¯    ¯¯¯");
 
-                    // Soma pontuação no ranking
+                    // Atualiza pontuação
                     if (primeiroJogador == "X")
                     {
                         ranking["X"] += 1;
@@ -1005,6 +1630,7 @@ while (true)
                         ranking["X"] += 1;
                     }
 
+
                     // Printa o ranking com os jogadores
                     Console.WriteLine("RANKING");
                     foreach (KeyValuePair<string, int> r in ranking)
@@ -1012,53 +1638,120 @@ while (true)
                         Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                     }
 
-                    // Lógica que pergunta se quer ou não continuar
-                    Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                    scannerDecision = Console.ReadLine();
+                    Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                    string verRanking = Console.ReadLine();
 
-                    if (scannerDecision == "1") // Caso queira
+                    if (verRanking == "1")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        MostrarRanking(ranking);
+
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = false;
-                        continue;
+                        else
+                        // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
-                    else // Caso queira voltar ao menu
+
+                    if (verRanking == "2")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = true;
+                        else
+                        // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
                 }
                 else
                 {
                     Console.WriteLine("O vencedor é o jogador: " + segundoJogador);
-                    // Printando a matriz
+                    // Printando a matriz com cores
                     for (int l = 0; l < matriz.GetLength(0); l++)
                     {
                         Console.WriteLine("  ___    ___    ___");
                         for (int c = 0; c < matriz.GetLength(1); c++)
                         {
-                            Console.Write(" | " + matriz[l, c] + " | ");
-                            //Thread.Sleep(50); // só para efeito visual
+                            Console.Write(" | ");
+
+                            if (matriz[l, c] == "X")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                Console.Write("X");
+                                Console.ResetColor();
+                            }
+                            else if (matriz[l, c] == "O")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Blue;  // O em azul
+                                Console.Write("O");
+                                Console.ResetColor();
+                            }
+                            else
+                            {
+                                Console.Write(matriz[l, c]); // número normal
+                            }
+
+                            Console.Write(" | ");
                         }
                         Console.WriteLine();
                     }
@@ -1082,41 +1775,88 @@ while (true)
                         Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                     }
 
-                    // Lógica que pergunta se quer ou não continuar
-                    Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                    scannerDecision = Console.ReadLine();
+                    Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                    string verRanking = Console.ReadLine();
 
-                    if (scannerDecision == "1") // Caso queira
+                    if (verRanking == "1")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        MostrarRanking(ranking);
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = false;
-                        continue;
+                        else // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
-                    else // Caso queira voltar ao menu
+
+                    if (verRanking == "2")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = true;
+                        else // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
+
                 }
             }
 
@@ -1126,20 +1866,38 @@ while (true)
                 if (matriz[0, 2] == "X" && matriz[1, 2] == "X" && matriz[2, 2] == "X")
                 {
                     Console.WriteLine("O vencedor é o jogador: " + primeiroJogador);
-                    // Printando a matriz
+                    // Printando a matriz com cores
                     for (int l = 0; l < matriz.GetLength(0); l++)
                     {
                         Console.WriteLine("  ___    ___    ___");
                         for (int c = 0; c < matriz.GetLength(1); c++)
                         {
-                            Console.Write(" | " + matriz[l, c] + " | ");
-                            //Thread.Sleep(50); // só para efeito visual
+                            Console.Write(" | ");
+
+                            if (matriz[l, c] == "X")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                Console.Write("X");
+                                Console.ResetColor();
+                            }
+                            else if (matriz[l, c] == "O")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Blue;  // O em azul
+                                Console.Write("O");
+                                Console.ResetColor();
+                            }
+                            else
+                            {
+                                Console.Write(matriz[l, c]); // número normal
+                            }
+
+                            Console.Write(" | ");
                         }
                         Console.WriteLine();
                     }
                     Console.WriteLine("  ¯¯¯    ¯¯¯    ¯¯¯");
 
-                    // Soma pontuação no ranking
+                    // Atualiza pontuação
                     if (primeiroJogador == "X")
                     {
                         ranking["X"] += 1;
@@ -1150,6 +1908,7 @@ while (true)
                         ranking["X"] += 1;
                     }
 
+
                     // Printa o ranking com os jogadores
                     Console.WriteLine("RANKING");
                     foreach (KeyValuePair<string, int> r in ranking)
@@ -1157,53 +1916,120 @@ while (true)
                         Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                     }
 
-                    // Lógica que pergunta se quer ou não continuar
-                    Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                    scannerDecision = Console.ReadLine();
+                    Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                    string verRanking = Console.ReadLine();
 
-                    if (scannerDecision == "1") // Caso queira
+                    if (verRanking == "1")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        MostrarRanking(ranking);
+
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = false;
-                        continue;
+                        else
+                        // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
-                    else // Caso queira voltar ao menu
+
+                    if (verRanking == "2")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = true;
+                        else
+                        // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
                 }
                 else
                 {
                     Console.WriteLine("O vencedor é o jogador: " + segundoJogador);
-                    // Printando a matriz
+                    // Printando a matriz com cores
                     for (int l = 0; l < matriz.GetLength(0); l++)
                     {
                         Console.WriteLine("  ___    ___    ___");
                         for (int c = 0; c < matriz.GetLength(1); c++)
                         {
-                            Console.Write(" | " + matriz[l, c] + " | ");
-                            //Thread.Sleep(50); // só para efeito visual
+                            Console.Write(" | ");
+
+                            if (matriz[l, c] == "X")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                Console.Write("X");
+                                Console.ResetColor();
+                            }
+                            else if (matriz[l, c] == "O")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Blue;  // O em azul
+                                Console.Write("O");
+                                Console.ResetColor();
+                            }
+                            else
+                            {
+                                Console.Write(matriz[l, c]); // número normal
+                            }
+
+                            Console.Write(" | ");
                         }
                         Console.WriteLine();
                     }
@@ -1227,40 +2053,86 @@ while (true)
                         Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                     }
 
-                    // Lógica que pergunta se quer ou não continuar
-                    Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                    scannerDecision = Console.ReadLine();
+                    Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                    string verRanking = Console.ReadLine();
 
-                    if (scannerDecision == "1") // Caso queira
+                    if (verRanking == "1")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        MostrarRanking(ranking);
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = false;
-                        continue;
+                        else // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
-                    else // Caso queira voltar ao menu
+
+                    if (verRanking == "2")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = true;
+                        else // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
                 }
             }
@@ -1271,20 +2143,38 @@ while (true)
                 if (matriz[0, 0] == "X" && matriz[1, 1] == "X" && matriz[2, 2] == "X")
                 {
                     Console.WriteLine("O vencedor é o jogador: " + primeiroJogador);
-                    // Printando a matriz
+                    // Printando a matriz com cores
                     for (int l = 0; l < matriz.GetLength(0); l++)
                     {
                         Console.WriteLine("  ___    ___    ___");
                         for (int c = 0; c < matriz.GetLength(1); c++)
                         {
-                            Console.Write(" | " + matriz[l, c] + " | ");
-                            //Thread.Sleep(50); // só para efeito visual
+                            Console.Write(" | ");
+
+                            if (matriz[l, c] == "X")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                Console.Write("X");
+                                Console.ResetColor();
+                            }
+                            else if (matriz[l, c] == "O")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Blue;  // O em azul
+                                Console.Write("O");
+                                Console.ResetColor();
+                            }
+                            else
+                            {
+                                Console.Write(matriz[l, c]); // número normal
+                            }
+
+                            Console.Write(" | ");
                         }
                         Console.WriteLine();
                     }
                     Console.WriteLine("  ¯¯¯    ¯¯¯    ¯¯¯");
 
-                    // Soma pontuação no ranking
+                    // Atualiza pontuação
                     if (primeiroJogador == "X")
                     {
                         ranking["X"] += 1;
@@ -1295,6 +2185,7 @@ while (true)
                         ranking["X"] += 1;
                     }
 
+
                     // Printa o ranking com os jogadores
                     Console.WriteLine("RANKING");
                     foreach (KeyValuePair<string, int> r in ranking)
@@ -1302,53 +2193,120 @@ while (true)
                         Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                     }
 
-                    // Lógica que pergunta se quer ou não continuar
-                    Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                    scannerDecision = Console.ReadLine();
+                    Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                    string verRanking = Console.ReadLine();
 
-                    if (scannerDecision == "1") // Caso queira
+                    if (verRanking == "1")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        MostrarRanking(ranking);
+
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = false;
-                        continue;
+                        else
+                        // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
-                    else // Caso queira voltar ao menu
+
+                    if (verRanking == "2")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = true;
+                        else
+                        // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
                 }
                 else
                 {
                     Console.WriteLine("O vencedor é o jogador: " + segundoJogador);
-                    // Printando a matriz
+                    // Printando a matriz com cores
                     for (int l = 0; l < matriz.GetLength(0); l++)
                     {
                         Console.WriteLine("  ___    ___    ___");
                         for (int c = 0; c < matriz.GetLength(1); c++)
                         {
-                            Console.Write(" | " + matriz[l, c] + " | ");
-                            //Thread.Sleep(50); // só para efeito visual
+                            Console.Write(" | ");
+
+                            if (matriz[l, c] == "X")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                Console.Write("X");
+                                Console.ResetColor();
+                            }
+                            else if (matriz[l, c] == "O")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Blue;  // O em azul
+                                Console.Write("O");
+                                Console.ResetColor();
+                            }
+                            else
+                            {
+                                Console.Write(matriz[l, c]); // número normal
+                            }
+
+                            Console.Write(" | ");
                         }
                         Console.WriteLine();
                     }
@@ -1372,40 +2330,86 @@ while (true)
                         Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                     }
 
-                    // Lógica que pergunta se quer ou não continuar
-                    Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                    scannerDecision = Console.ReadLine();
+                    Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                    string verRanking = Console.ReadLine();
 
-                    if (scannerDecision == "1") // Caso queira
+                    if (verRanking == "1")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        MostrarRanking(ranking);
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = false;
-                        continue;
+                        else // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
-                    else // Caso queira voltar ao menu
+
+                    if (verRanking == "2")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = true;
+                        else // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
                 }
             }
@@ -1416,20 +2420,38 @@ while (true)
                 if (matriz[0, 2] == "X" && matriz[1, 1] == "X" && matriz[2, 0] == "X")
                 {
                     Console.WriteLine("O vencedor é o jogador: " + primeiroJogador);
-                    // Printando a matriz
+                    // Printando a matriz com cores
                     for (int l = 0; l < matriz.GetLength(0); l++)
                     {
                         Console.WriteLine("  ___    ___    ___");
                         for (int c = 0; c < matriz.GetLength(1); c++)
                         {
-                            Console.Write(" | " + matriz[l, c] + " | ");
-                            //Thread.Sleep(50); // só para efeito visual
+                            Console.Write(" | ");
+
+                            if (matriz[l, c] == "X")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                Console.Write("X");
+                                Console.ResetColor();
+                            }
+                            else if (matriz[l, c] == "O")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Blue;  // O em azul
+                                Console.Write("O");
+                                Console.ResetColor();
+                            }
+                            else
+                            {
+                                Console.Write(matriz[l, c]); // número normal
+                            }
+
+                            Console.Write(" | ");
                         }
                         Console.WriteLine();
                     }
                     Console.WriteLine("  ¯¯¯    ¯¯¯    ¯¯¯");
 
-                    // Soma pontuação no ranking
+                    // Atualiza pontuação
                     if (primeiroJogador == "X")
                     {
                         ranking["X"] += 1;
@@ -1440,6 +2462,7 @@ while (true)
                         ranking["X"] += 1;
                     }
 
+
                     // Printa o ranking com os jogadores
                     Console.WriteLine("RANKING");
                     foreach (KeyValuePair<string, int> r in ranking)
@@ -1447,53 +2470,120 @@ while (true)
                         Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                     }
 
-                    // Lógica que pergunta se quer ou não continuar
-                    Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                    scannerDecision = Console.ReadLine();
+                    Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                    string verRanking = Console.ReadLine();
 
-                    if (scannerDecision == "1") // Caso queira
+                    if (verRanking == "1")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        MostrarRanking(ranking);
+
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = false;
-                        continue;
+                        else
+                        // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
-                    else // Caso queira voltar ao menu
+
+                    if (verRanking == "2")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = true;
+                        else
+                        // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
                 }
                 else
                 {
                     Console.WriteLine("O vencedor é o jogador: " + segundoJogador);
-                    // Printando a matriz
+                    // Printando a matriz com cores
                     for (int l = 0; l < matriz.GetLength(0); l++)
                     {
                         Console.WriteLine("  ___    ___    ___");
                         for (int c = 0; c < matriz.GetLength(1); c++)
                         {
-                            Console.Write(" | " + matriz[l, c] + " | ");
-                            //Thread.Sleep(50); // só para efeito visual
+                            Console.Write(" | ");
+
+                            if (matriz[l, c] == "X")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                Console.Write("X");
+                                Console.ResetColor();
+                            }
+                            else if (matriz[l, c] == "O")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Blue;  // O em azul
+                                Console.Write("O");
+                                Console.ResetColor();
+                            }
+                            else
+                            {
+                                Console.Write(matriz[l, c]); // número normal
+                            }
+
+                            Console.Write(" | ");
                         }
                         Console.WriteLine();
                     }
@@ -1517,6 +2607,142 @@ while (true)
                         Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                     }
 
+                    Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                    string verRanking = Console.ReadLine();
+
+                    if (verRanking == "1")
+                    {
+                        MostrarRanking(ranking);
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
+                        }
+                        else // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
+                    }
+
+                    if (verRanking == "2")
+                    {
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
+                        }
+                        else // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
+                    }
+                }
+            }
+
+            // Caso de velha
+            if (contagemRodada > 8)
+            {
+                Console.WriteLine("O jogo terminou em velha!");
+
+                // Printando a matriz com cores
+                for (int l = 0; l < matriz.GetLength(0); l++)
+                {
+                    Console.WriteLine("  ___    ___    ___");
+                    for (int c = 0; c < matriz.GetLength(1); c++)
+                    {
+                        Console.Write(" | ");
+
+                        if (matriz[l, c] == "X")
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                            Console.Write("X");
+                            Console.ResetColor();
+                        }
+                        else if (matriz[l, c] == "O")
+                        {
+                            Console.ForegroundColor = ConsoleColor.Blue;  // O em azul
+                            Console.Write("O");
+                            Console.ResetColor();
+                        }
+                        else
+                        {
+                            Console.Write(matriz[l, c]); // número normal
+                        }
+
+                        Console.Write(" | ");
+                    }
+                    Console.WriteLine();
+                }
+                Console.WriteLine("  ¯¯¯    ¯¯¯    ¯¯¯");
+
+                // Soma pontuação no ranking
+                ranking["Velha"] += 1;
+
+                // Printa o ranking com os jogadores
+                Console.WriteLine("RANKING");
+                foreach (KeyValuePair<string, int> r in ranking)
+                {
+                    Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
+                }
+
+                Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                string verRanking = Console.ReadLine();
+
+                if (verRanking == "1")
+                {
+                    MostrarRanking(ranking);
                     // Lógica que pergunta se quer ou não continuar
                     Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
                     scannerDecision = Console.ReadLine();
@@ -1553,69 +2779,45 @@ while (true)
                         vencedor = true;
                     }
                 }
-            }
 
-            // Caso de velha
-            if (contagemRodada > 8)
-            {
-                Console.WriteLine("O jogo terminou em velha!");
-                // Printando a matriz
-                for (int l = 0; l < matriz.GetLength(0); l++)
+                if (verRanking == "2")
                 {
-                    Console.WriteLine("  ___    ___    ___");
-                    for (int c = 0; c < matriz.GetLength(1); c++)
+                    // Lógica que pergunta se quer ou não continuar
+                    Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                    scannerDecision = Console.ReadLine();
+
+                    if (scannerDecision == "1") // Caso queira
                     {
-                        Console.Write(" | " + matriz[l, c] + " | ");
-                        //Thread.Sleep(50); // só para efeito visual
-                    }
-                    Console.WriteLine();
-                }
-                Console.WriteLine("  ¯¯¯    ¯¯¯    ¯¯¯");
-                // Soma pontuação no ranking
-                ranking["Velha"] += 1;
-
-                // Printa o ranking com os jogadores
-                Console.WriteLine("RANKING");
-                foreach (KeyValuePair<string, int> r in ranking)
-                {
-                    Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
-                }
-
-                Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                scannerDecision = Console.ReadLine();
-
-                if (scannerDecision == "1") // Caso queira
-                {
-                    // renumerando a matriz
-                    n = 0;
-                    for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
-                    {
-                        for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                        // renumerando a matriz
+                        n = 0;
+                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                         {
-                            matriz[l, c] = Convert.ToString(n += 1);
+                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            {
+                                matriz[l, c] = Convert.ToString(n += 1);
+                            }
                         }
+                        Console.Clear(); // Limpa terminal
+                        contagemRodada = 0;
+                        vencedor = false;
+                        continue;
                     }
-                    Console.Clear(); // Limpa terminal
-                    contagemRodada = 0;
-                    vencedor = false;
-                    continue;
-                }
-                else // Caso queira voltar ao menu
-                {
-                    // renumerando a matriz
-                    n = 0;
-                    for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                    else // Caso queira voltar ao menu
                     {
-                        for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                        // renumerando a matriz
+                        n = 0;
+                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                         {
-                            matriz[l, c] = Convert.ToString(n += 1);
+                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            {
+                                matriz[l, c] = Convert.ToString(n += 1);
+                            }
                         }
+                        Console.Clear(); // Limpa terminal
+                        contagemRodada = 0;
+                        vencedor = true;
                     }
-                    Console.Clear(); // Limpa terminal
-                    contagemRodada = 0;
-                    vencedor = true;
                 }
-
             }
         }
     }
@@ -1671,14 +2873,32 @@ while (true)
             int contagemRodada = 0;
             while (!vencedor || contagemRodada > 8)
             {
-                // Printando a matriz
+                // Printando a matriz com cores
                 for (int l = 0; l < matriz.GetLength(0); l++)
                 {
                     Console.WriteLine("  ___    ___    ___");
                     for (int c = 0; c < matriz.GetLength(1); c++)
                     {
-                        Console.Write(" | " + matriz[l, c] + " | ");
-                        //Thread.Sleep(50); // só para efeito visual
+                        Console.Write(" | ");
+
+                        if (matriz[l, c] == "X")
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                            Console.Write("X");
+                            Console.ResetColor();
+                        }
+                        else if (matriz[l, c] == "O")
+                        {
+                            Console.ForegroundColor = ConsoleColor.Yellow;  // O em amarelo
+                            Console.Write("O");
+                            Console.ResetColor();
+                        }
+                        else
+                        {
+                            Console.Write(matriz[l, c]); // número normal
+                        }
+
+                        Console.Write(" | ");
                     }
                     Console.WriteLine();
                 }
@@ -1927,14 +3147,32 @@ while (true)
                     if (matriz[0, 0] == "X" && matriz[0, 1] == "X" && matriz[0, 2] == "X")
                     {
                         Console.WriteLine("O vencedor é " + nomeJogador + "!");
-                        // Printando a matriz
+                        // Printando a matriz com cores
                         for (int l = 0; l < matriz.GetLength(0); l++)
                         {
                             Console.WriteLine("  ___    ___    ___");
                             for (int c = 0; c < matriz.GetLength(1); c++)
                             {
-                                Console.Write(" | " + matriz[l, c] + " | ");
-                                //Thread.Sleep(50); // só para efeito visual
+                                Console.Write(" | ");
+
+                                if (matriz[l, c] == "X")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                    Console.Write("X");
+                                    Console.ResetColor();
+                                }
+                                else if (matriz[l, c] == "O")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Yellow;  // O em amarelo
+                                    Console.Write("O");
+                                    Console.ResetColor();
+                                }
+                                else
+                                {
+                                    Console.Write(matriz[l, c]); // número normal
+                                }
+
+                                Console.Write(" | ");
                             }
                             Console.WriteLine();
                         }
@@ -1958,56 +3196,123 @@ while (true)
                             Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                         }
 
-                        // Lógica que pergunta se quer ou não continuar
-                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                        scannerDecision = Console.ReadLine();
+                        Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                        string verRanking = Console.ReadLine();
 
-                        if (scannerDecision == "1") // Caso queira
+                        if (verRanking == "1")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            MostrarRanking(ranking);
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            //Resetar a lista (reiniciar game)
-                            numerosDisponiveis = verificaArrayBot.ToList();
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = false;
-                            continue;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
-                        else
-                        // Caso queira voltar ao menu
+
+                        if (verRanking == "2")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = true;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
                     }
                     else
                     {
                         Console.WriteLine("O vencedor é o Bot!");
-                        // Printando a matriz
+                        // Printando a matriz com cores
                         for (int l = 0; l < matriz.GetLength(0); l++)
                         {
                             Console.WriteLine("  ___    ___    ___");
                             for (int c = 0; c < matriz.GetLength(1); c++)
                             {
-                                Console.Write(" | " + matriz[l, c] + " | ");
-                                //Thread.Sleep(50); // só para efeito visual
+                                Console.Write(" | ");
+
+                                if (matriz[l, c] == "X")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                    Console.Write("X");
+                                    Console.ResetColor();
+                                }
+                                else if (matriz[l, c] == "O")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Yellow;  // O em amarelo
+                                    Console.Write("O");
+                                    Console.ResetColor();
+                                }
+                                else
+                                {
+                                    Console.Write(matriz[l, c]); // número normal
+                                }
+
+                                Console.Write(" | ");
                             }
                             Console.WriteLine();
                         }
@@ -2025,42 +3330,92 @@ while (true)
                             Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                         }
 
-                        // Lógica que pergunta se quer ou não continuar
-                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                        scannerDecision = Console.ReadLine();
+                        Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                        string verRanking = Console.ReadLine();
 
-                        if (scannerDecision == "1") // Caso queira
+                        if (verRanking == "1")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            MostrarRanking(ranking);
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            //Resetar a lista (reiniciar game)
-                            numerosDisponiveis = verificaArrayBot.ToList();
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = false;
-                            continue;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
-                        else // Caso queira voltar ao menu
+
+                        if (verRanking == "2")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = true;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
                     }
 
@@ -2071,14 +3426,32 @@ while (true)
                     if (matriz[1, 0] == "X" && matriz[1, 1] == "X" && matriz[1, 2] == "X")
                     {
                         Console.WriteLine("O vencedor é " + nomeJogador + "!");
-                        // Printando a matriz
+                        // Printando a matriz com cores
                         for (int l = 0; l < matriz.GetLength(0); l++)
                         {
                             Console.WriteLine("  ___    ___    ___");
                             for (int c = 0; c < matriz.GetLength(1); c++)
                             {
-                                Console.Write(" | " + matriz[l, c] + " | ");
-                                //Thread.Sleep(50); // só para efeito visual
+                                Console.Write(" | ");
+
+                                if (matriz[l, c] == "X")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                    Console.Write("X");
+                                    Console.ResetColor();
+                                }
+                                else if (matriz[l, c] == "O")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Yellow;  // O em amarelo
+                                    Console.Write("O");
+                                    Console.ResetColor();
+                                }
+                                else
+                                {
+                                    Console.Write(matriz[l, c]); // número normal
+                                }
+
+                                Console.Write(" | ");
                             }
                             Console.WriteLine();
                         }
@@ -2102,56 +3475,123 @@ while (true)
                             Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                         }
 
-                        // Lógica que pergunta se quer ou não continuar
-                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                        scannerDecision = Console.ReadLine();
+                        Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                        string verRanking = Console.ReadLine();
 
-                        if (scannerDecision == "1") // Caso queira
+                        if (verRanking == "1")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            MostrarRanking(ranking);
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            //Resetar a lista (reiniciar game)
-                            numerosDisponiveis = verificaArrayBot.ToList();
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = false;
-                            continue;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
-                        else
-                        // Caso queira voltar ao menu
+
+                        if (verRanking == "2")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = true;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
                     }
                     else
                     {
                         Console.WriteLine("O vencedor é o Bot!");
-                        // Printando a matriz
+                        // Printando a matriz com cores
                         for (int l = 0; l < matriz.GetLength(0); l++)
                         {
                             Console.WriteLine("  ___    ___    ___");
                             for (int c = 0; c < matriz.GetLength(1); c++)
                             {
-                                Console.Write(" | " + matriz[l, c] + " | ");
-                                //Thread.Sleep(50); // só para efeito visual
+                                Console.Write(" | ");
+
+                                if (matriz[l, c] == "X")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                    Console.Write("X");
+                                    Console.ResetColor();
+                                }
+                                else if (matriz[l, c] == "O")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Yellow;  // O em amarelo
+                                    Console.Write("O");
+                                    Console.ResetColor();
+                                }
+                                else
+                                {
+                                    Console.Write(matriz[l, c]); // número normal
+                                }
+
+                                Console.Write(" | ");
                             }
                             Console.WriteLine();
                         }
@@ -2169,45 +3609,94 @@ while (true)
                             Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                         }
 
-                        // Lógica que pergunta se quer ou não continuar
-                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                        scannerDecision = Console.ReadLine();
+                        Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                        string verRanking = Console.ReadLine();
 
-                        if (scannerDecision == "1") // Caso queira
+                        if (verRanking == "1")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            MostrarRanking(ranking);
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            //Resetar a lista (reiniciar game)
-                            numerosDisponiveis = verificaArrayBot.ToList();
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = false;
-                            continue;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
-                        else // Caso queira voltar ao menu
+
+                        if (verRanking == "2")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = true;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
                     }
-
                 }
                 // Terceiro caso da linha(7, 8 e 9)
                 if (matriz[2, 0] == "X" && matriz[2, 1] == "X" && matriz[2, 2] == "X" || matriz[2, 0] == "O" && matriz[2, 1] == "O" && matriz[2, 2] == "O")
@@ -2215,14 +3704,32 @@ while (true)
                     if (matriz[2, 0] == "X" && matriz[2, 1] == "X" && matriz[2, 2] == "X")
                     {
                         Console.WriteLine("O vencedor é " + nomeJogador + "!");
-                        // Printando a matriz
+                        // Printando a matriz com cores
                         for (int l = 0; l < matriz.GetLength(0); l++)
                         {
                             Console.WriteLine("  ___    ___    ___");
                             for (int c = 0; c < matriz.GetLength(1); c++)
                             {
-                                Console.Write(" | " + matriz[l, c] + " | ");
-                                //Thread.Sleep(50); // só para efeito visual
+                                Console.Write(" | ");
+
+                                if (matriz[l, c] == "X")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                    Console.Write("X");
+                                    Console.ResetColor();
+                                }
+                                else if (matriz[l, c] == "O")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Yellow;  // O em amarelo
+                                    Console.Write("O");
+                                    Console.ResetColor();
+                                }
+                                else
+                                {
+                                    Console.Write(matriz[l, c]); // número normal
+                                }
+
+                                Console.Write(" | ");
                             }
                             Console.WriteLine();
                         }
@@ -2246,56 +3753,123 @@ while (true)
                             Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                         }
 
-                        // Lógica que pergunta se quer ou não continuar
-                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                        scannerDecision = Console.ReadLine();
+                        Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                        string verRanking = Console.ReadLine();
 
-                        if (scannerDecision == "1") // Caso queira
+                        if (verRanking == "1")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            MostrarRanking(ranking);
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            //Resetar a lista (reiniciar game)
-                            numerosDisponiveis = verificaArrayBot.ToList();
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = false;
-                            continue;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
-                        else
-                        // Caso queira voltar ao menu
+
+                        if (verRanking == "2")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = true;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
                     }
                     else
                     {
                         Console.WriteLine("O vencedor é o Bot!");
-                        // Printando a matriz
+                        // Printando a matriz com cores
                         for (int l = 0; l < matriz.GetLength(0); l++)
                         {
                             Console.WriteLine("  ___    ___    ___");
                             for (int c = 0; c < matriz.GetLength(1); c++)
                             {
-                                Console.Write(" | " + matriz[l, c] + " | ");
-                                //Thread.Sleep(50); // só para efeito visual
+                                Console.Write(" | ");
+
+                                if (matriz[l, c] == "X")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                    Console.Write("X");
+                                    Console.ResetColor();
+                                }
+                                else if (matriz[l, c] == "O")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Yellow;  // O em amarelo
+                                    Console.Write("O");
+                                    Console.ResetColor();
+                                }
+                                else
+                                {
+                                    Console.Write(matriz[l, c]); // número normal
+                                }
+
+                                Console.Write(" | ");
                             }
                             Console.WriteLine();
                         }
@@ -2313,45 +3887,94 @@ while (true)
                             Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                         }
 
-                        // Lógica que pergunta se quer ou não continuar
-                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                        scannerDecision = Console.ReadLine();
+                        Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                        string verRanking = Console.ReadLine();
 
-                        if (scannerDecision == "1") // Caso queira
+                        if (verRanking == "1")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            MostrarRanking(ranking);
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            //Resetar a lista (reiniciar game)
-                            numerosDisponiveis = verificaArrayBot.ToList();
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = false;
-                            continue;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
-                        else // Caso queira voltar ao menu
+
+                        if (verRanking == "2")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = true;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
                     }
-
                 }
                 // Primeiro caso da coluna(1, 4 e 7)
                 if (matriz[0, 0] == "X" && matriz[1, 0] == "X" && matriz[2, 0] == "X" || matriz[0, 0] == "O" && matriz[1, 0] == "O" && matriz[2, 0] == "O")
@@ -2359,14 +3982,32 @@ while (true)
                     if (matriz[0, 0] == "X" && matriz[1, 0] == "X" && matriz[2, 0] == "X")
                     {
                         Console.WriteLine("O vencedor é " + nomeJogador + "!");
-                        // Printando a matriz
+                        // Printando a matriz com cores
                         for (int l = 0; l < matriz.GetLength(0); l++)
                         {
                             Console.WriteLine("  ___    ___    ___");
                             for (int c = 0; c < matriz.GetLength(1); c++)
                             {
-                                Console.Write(" | " + matriz[l, c] + " | ");
-                                //Thread.Sleep(50); // só para efeito visual
+                                Console.Write(" | ");
+
+                                if (matriz[l, c] == "X")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                    Console.Write("X");
+                                    Console.ResetColor();
+                                }
+                                else if (matriz[l, c] == "O")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Yellow;  // O em amarelo
+                                    Console.Write("O");
+                                    Console.ResetColor();
+                                }
+                                else
+                                {
+                                    Console.Write(matriz[l, c]); // número normal
+                                }
+
+                                Console.Write(" | ");
                             }
                             Console.WriteLine();
                         }
@@ -2390,56 +4031,123 @@ while (true)
                             Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                         }
 
-                        // Lógica que pergunta se quer ou não continuar
-                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                        scannerDecision = Console.ReadLine();
+                        Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                        string verRanking = Console.ReadLine();
 
-                        if (scannerDecision == "1") // Caso queira
+                        if (verRanking == "1")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            MostrarRanking(ranking);
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            //Resetar a lista (reiniciar game)
-                            numerosDisponiveis = verificaArrayBot.ToList();
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = false;
-                            continue;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
-                        else
-                        // Caso queira voltar ao menu
+
+                        if (verRanking == "2")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = true;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
                     }
                     else
                     {
                         Console.WriteLine("O vencedor é o Bot!");
-                        // Printando a matriz
+                        // Printando a matriz com cores
                         for (int l = 0; l < matriz.GetLength(0); l++)
                         {
                             Console.WriteLine("  ___    ___    ___");
                             for (int c = 0; c < matriz.GetLength(1); c++)
                             {
-                                Console.Write(" | " + matriz[l, c] + " | ");
-                                //Thread.Sleep(50); // só para efeito visual
+                                Console.Write(" | ");
+
+                                if (matriz[l, c] == "X")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                    Console.Write("X");
+                                    Console.ResetColor();
+                                }
+                                else if (matriz[l, c] == "O")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Yellow;  // O em amarelo
+                                    Console.Write("O");
+                                    Console.ResetColor();
+                                }
+                                else
+                                {
+                                    Console.Write(matriz[l, c]); // número normal
+                                }
+
+                                Console.Write(" | ");
                             }
                             Console.WriteLine();
                         }
@@ -2457,45 +4165,94 @@ while (true)
                             Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                         }
 
-                        // Lógica que pergunta se quer ou não continuar
-                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                        scannerDecision = Console.ReadLine();
+                        Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                        string verRanking = Console.ReadLine();
 
-                        if (scannerDecision == "1") // Caso queira
+                        if (verRanking == "1")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            MostrarRanking(ranking);
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            //Resetar a lista (reiniciar game)
-                            numerosDisponiveis = verificaArrayBot.ToList();
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = false;
-                            continue;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
-                        else // Caso queira voltar ao menu
+
+                        if (verRanking == "2")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = true;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
                     }
-
                 }
                 // Segundo caso da coluna(2, 5 e 8)
                 if (matriz[0, 1] == "X" && matriz[1, 1] == "X" && matriz[2, 1] == "X" || matriz[0, 1] == "O" && matriz[1, 1] == "O" && matriz[2, 1] == "O")
@@ -2503,14 +4260,32 @@ while (true)
                     if (matriz[0, 1] == "X" && matriz[1, 1] == "X" && matriz[2, 1] == "X")
                     {
                         Console.WriteLine("O vencedor é " + nomeJogador + "!");
-                        // Printando a matriz
+                        // Printando a matriz com cores
                         for (int l = 0; l < matriz.GetLength(0); l++)
                         {
                             Console.WriteLine("  ___    ___    ___");
                             for (int c = 0; c < matriz.GetLength(1); c++)
                             {
-                                Console.Write(" | " + matriz[l, c] + " | ");
-                                //Thread.Sleep(50); // só para efeito visual
+                                Console.Write(" | ");
+
+                                if (matriz[l, c] == "X")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                    Console.Write("X");
+                                    Console.ResetColor();
+                                }
+                                else if (matriz[l, c] == "O")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Yellow;  // O em amarelo
+                                    Console.Write("O");
+                                    Console.ResetColor();
+                                }
+                                else
+                                {
+                                    Console.Write(matriz[l, c]); // número normal
+                                }
+
+                                Console.Write(" | ");
                             }
                             Console.WriteLine();
                         }
@@ -2534,60 +4309,128 @@ while (true)
                             Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                         }
 
-                        // Lógica que pergunta se quer ou não continuar
-                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                        scannerDecision = Console.ReadLine();
+                        Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                        string verRanking = Console.ReadLine();
 
-                        if (scannerDecision == "1") // Caso queira
+                        if (verRanking == "1")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            MostrarRanking(ranking);
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            //Resetar a lista (reiniciar game)
-                            numerosDisponiveis = verificaArrayBot.ToList();
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = false;
-                            continue;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
-                        else
-                        // Caso queira voltar ao menu
+
+                        if (verRanking == "2")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = true;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
                     }
                     else
                     {
                         Console.WriteLine("O vencedor é o Bot!");
-                        // Printando a matriz
+                        // Printando a matriz com cores
                         for (int l = 0; l < matriz.GetLength(0); l++)
                         {
                             Console.WriteLine("  ___    ___    ___");
                             for (int c = 0; c < matriz.GetLength(1); c++)
                             {
-                                Console.Write(" | " + matriz[l, c] + " | ");
-                                //Thread.Sleep(50); // só para efeito visual
+                                Console.Write(" | ");
+
+                                if (matriz[l, c] == "X")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                    Console.Write("X");
+                                    Console.ResetColor();
+                                }
+                                else if (matriz[l, c] == "O")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Yellow;  // O em amarelo
+                                    Console.Write("O");
+                                    Console.ResetColor();
+                                }
+                                else
+                                {
+                                    Console.Write(matriz[l, c]); // número normal
+                                }
+
+                                Console.Write(" | ");
                             }
                             Console.WriteLine();
                         }
                         Console.WriteLine("  ¯¯¯    ¯¯¯    ¯¯¯");
+
                         // Soma pontuação no ranking
                         ranking["Bot"] += 1;
                         ranking["O"] += 1;
@@ -2600,45 +4443,94 @@ while (true)
                             Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                         }
 
-                        // Lógica que pergunta se quer ou não continuar
-                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                        scannerDecision = Console.ReadLine();
+                        Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                        string verRanking = Console.ReadLine();
 
-                        if (scannerDecision == "1") // Caso queira
+                        if (verRanking == "1")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            MostrarRanking(ranking);
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            //Resetar a lista (reiniciar game)
-                            numerosDisponiveis = verificaArrayBot.ToList();
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = false;
-                            continue;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
-                        else // Caso queira voltar ao menu
+
+                        if (verRanking == "2")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = true;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
                     }
-
                 }
                 // Terceiro caso da coluna(3, 6 e 9)
                 if (matriz[0, 2] == "X" && matriz[1, 2] == "X" && matriz[2, 2] == "X" || matriz[0, 2] == "O" && matriz[1, 2] == "O" && matriz[2, 2] == "O")
@@ -2646,14 +4538,32 @@ while (true)
                     if (matriz[0, 2] == "X" && matriz[1, 2] == "X" && matriz[2, 2] == "X")
                     {
                         Console.WriteLine("O vencedor é " + nomeJogador + "!");
-                        // Printando a matriz
+                        // Printando a matriz com cores
                         for (int l = 0; l < matriz.GetLength(0); l++)
                         {
                             Console.WriteLine("  ___    ___    ___");
                             for (int c = 0; c < matriz.GetLength(1); c++)
                             {
-                                Console.Write(" | " + matriz[l, c] + " | ");
-                                //Thread.Sleep(50); // só para efeito visual
+                                Console.Write(" | ");
+
+                                if (matriz[l, c] == "X")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                    Console.Write("X");
+                                    Console.ResetColor();
+                                }
+                                else if (matriz[l, c] == "O")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Yellow;  // O em amarelo
+                                    Console.Write("O");
+                                    Console.ResetColor();
+                                }
+                                else
+                                {
+                                    Console.Write(matriz[l, c]); // número normal
+                                }
+
+                                Console.Write(" | ");
                             }
                             Console.WriteLine();
                         }
@@ -2677,56 +4587,123 @@ while (true)
                             Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                         }
 
-                        // Lógica que pergunta se quer ou não continuar
-                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                        scannerDecision = Console.ReadLine();
+                        Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                        string verRanking = Console.ReadLine();
 
-                        if (scannerDecision == "1") // Caso queira
+                        if (verRanking == "1")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            MostrarRanking(ranking);
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            //Resetar a lista (reiniciar game)
-                            numerosDisponiveis = verificaArrayBot.ToList();
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = false;
-                            continue;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
-                        else
-                        // Caso queira voltar ao menu
+
+                        if (verRanking == "2")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = true;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
                     }
                     else
                     {
                         Console.WriteLine("O vencedor é o Bot!");
-                        // Printando a matriz
+                        // Printando a matriz com cores
                         for (int l = 0; l < matriz.GetLength(0); l++)
                         {
                             Console.WriteLine("  ___    ___    ___");
                             for (int c = 0; c < matriz.GetLength(1); c++)
                             {
-                                Console.Write(" | " + matriz[l, c] + " | ");
-                                //Thread.Sleep(50); // só para efeito visual
+                                Console.Write(" | ");
+
+                                if (matriz[l, c] == "X")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                    Console.Write("X");
+                                    Console.ResetColor();
+                                }
+                                else if (matriz[l, c] == "O")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Yellow;  // O em amarelo
+                                    Console.Write("O");
+                                    Console.ResetColor();
+                                }
+                                else
+                                {
+                                    Console.Write(matriz[l, c]); // número normal
+                                }
+
+                                Console.Write(" | ");
                             }
                             Console.WriteLine();
                         }
@@ -2744,45 +4721,94 @@ while (true)
                             Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                         }
 
-                        // Lógica que pergunta se quer ou não continuar
-                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                        scannerDecision = Console.ReadLine();
+                        Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                        string verRanking = Console.ReadLine();
 
-                        if (scannerDecision == "1") // Caso queira
+                        if (verRanking == "1")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            MostrarRanking(ranking);
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            //Resetar a lista (reiniciar game)
-                            numerosDisponiveis = verificaArrayBot.ToList();
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = false;
-                            continue;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
-                        else // Caso queira voltar ao menu
+
+                        if (verRanking == "2")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = true;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
                     }
-
                 }
                 // Primeiro caso da diagonal(1, 5 e 9)
                 if (matriz[0, 0] == "X" && matriz[1, 1] == "X" && matriz[2, 2] == "X" || matriz[0, 0] == "O" && matriz[1, 1] == "O" && matriz[2, 2] == "O")
@@ -2790,14 +4816,32 @@ while (true)
                     if (matriz[0, 0] == "X" && matriz[1, 1] == "X" && matriz[2, 2] == "X")
                     {
                         Console.WriteLine("O vencedor é " + nomeJogador + "!");
-                        // Printando a matriz
+                        // Printando a matriz com cores
                         for (int l = 0; l < matriz.GetLength(0); l++)
                         {
                             Console.WriteLine("  ___    ___    ___");
                             for (int c = 0; c < matriz.GetLength(1); c++)
                             {
-                                Console.Write(" | " + matriz[l, c] + " | ");
-                                //Thread.Sleep(50); // só para efeito visual
+                                Console.Write(" | ");
+
+                                if (matriz[l, c] == "X")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                    Console.Write("X");
+                                    Console.ResetColor();
+                                }
+                                else if (matriz[l, c] == "O")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Yellow;  // O em amarelo
+                                    Console.Write("O");
+                                    Console.ResetColor();
+                                }
+                                else
+                                {
+                                    Console.Write(matriz[l, c]); // número normal
+                                }
+
+                                Console.Write(" | ");
                             }
                             Console.WriteLine();
                         }
@@ -2821,56 +4865,123 @@ while (true)
                             Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                         }
 
-                        // Lógica que pergunta se quer ou não continuar
-                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                        scannerDecision = Console.ReadLine();
+                        Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                        string verRanking = Console.ReadLine();
 
-                        if (scannerDecision == "1") // Caso queira
+                        if (verRanking == "1")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            MostrarRanking(ranking);
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            //Resetar a lista (reiniciar game)
-                            numerosDisponiveis = verificaArrayBot.ToList();
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = false;
-                            continue;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
-                        else
-                        // Caso queira voltar ao menu
+
+                        if (verRanking == "2")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = true;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
                     }
                     else
                     {
                         Console.WriteLine("O vencedor é o Bot!");
-                        // Printando a matriz
+                        // Printando a matriz com cores
                         for (int l = 0; l < matriz.GetLength(0); l++)
                         {
                             Console.WriteLine("  ___    ___    ___");
                             for (int c = 0; c < matriz.GetLength(1); c++)
                             {
-                                Console.Write(" | " + matriz[l, c] + " | ");
-                                //Thread.Sleep(50); // só para efeito visual
+                                Console.Write(" | ");
+
+                                if (matriz[l, c] == "X")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                    Console.Write("X");
+                                    Console.ResetColor();
+                                }
+                                else if (matriz[l, c] == "O")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Yellow;  // O em amarelo
+                                    Console.Write("O");
+                                    Console.ResetColor();
+                                }
+                                else
+                                {
+                                    Console.Write(matriz[l, c]); // número normal
+                                }
+
+                                Console.Write(" | ");
                             }
                             Console.WriteLine();
                         }
@@ -2888,45 +4999,94 @@ while (true)
                             Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                         }
 
-                        // Lógica que pergunta se quer ou não continuar
-                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                        scannerDecision = Console.ReadLine();
+                        Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                        string verRanking = Console.ReadLine();
 
-                        if (scannerDecision == "1") // Caso queira
+                        if (verRanking == "1")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            MostrarRanking(ranking);
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            //Resetar a lista (reiniciar game)
-                            numerosDisponiveis = verificaArrayBot.ToList();
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = false;
-                            continue;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
-                        else // Caso queira voltar ao menu
+
+                        if (verRanking == "2")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = true;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
                     }
-
                 }
                 // Segundo caso da diagonal(3, 5 e 7)
                 if (matriz[0, 2] == "X" && matriz[1, 1] == "X" && matriz[2, 0] == "X" || matriz[0, 2] == "O" && matriz[1, 1] == "O" && matriz[2, 0] == "O")
@@ -2934,14 +5094,32 @@ while (true)
                     if (matriz[0, 2] == "X" && matriz[1, 1] == "X" && matriz[2, 0] == "X")
                     {
                         Console.WriteLine("O vencedor é " + nomeJogador + "!");
-                        // Printando a matriz
+                        // Printando a matriz com cores
                         for (int l = 0; l < matriz.GetLength(0); l++)
                         {
                             Console.WriteLine("  ___    ___    ___");
                             for (int c = 0; c < matriz.GetLength(1); c++)
                             {
-                                Console.Write(" | " + matriz[l, c] + " | ");
-                                //Thread.Sleep(50); // só para efeito visual
+                                Console.Write(" | ");
+
+                                if (matriz[l, c] == "X")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                    Console.Write("X");
+                                    Console.ResetColor();
+                                }
+                                else if (matriz[l, c] == "O")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Yellow;  // O em amarelo
+                                    Console.Write("O");
+                                    Console.ResetColor();
+                                }
+                                else
+                                {
+                                    Console.Write(matriz[l, c]); // número normal
+                                }
+
+                                Console.Write(" | ");
                             }
                             Console.WriteLine();
                         }
@@ -2965,56 +5143,123 @@ while (true)
                             Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                         }
 
-                        // Lógica que pergunta se quer ou não continuar
-                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                        scannerDecision = Console.ReadLine();
+                        Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                        string verRanking = Console.ReadLine();
 
-                        if (scannerDecision == "1") // Caso queira
+                        if (verRanking == "1")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            MostrarRanking(ranking);
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            //Resetar a lista (reiniciar game)
-                            numerosDisponiveis = verificaArrayBot.ToList();
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = false;
-                            continue;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
-                        else
-                        // Caso queira voltar ao menu
+
+                        if (verRanking == "2")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = true;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
                     }
                     else
                     {
                         Console.WriteLine("O vencedor é o Bot!");
-                        // Printando a matriz
+                        // Printando a matriz com cores
                         for (int l = 0; l < matriz.GetLength(0); l++)
                         {
                             Console.WriteLine("  ___    ___    ___");
                             for (int c = 0; c < matriz.GetLength(1); c++)
                             {
-                                Console.Write(" | " + matriz[l, c] + " | ");
-                                //Thread.Sleep(50); // só para efeito visual
+                                Console.Write(" | ");
+
+                                if (matriz[l, c] == "X")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                    Console.Write("X");
+                                    Console.ResetColor();
+                                }
+                                else if (matriz[l, c] == "O")
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Yellow;  // O em amarelo
+                                    Console.Write("O");
+                                    Console.ResetColor();
+                                }
+                                else
+                                {
+                                    Console.Write(matriz[l, c]); // número normal
+                                }
+
+                                Console.Write(" | ");
                             }
                             Console.WriteLine();
                         }
@@ -3032,58 +5277,125 @@ while (true)
                             Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                         }
 
-                        // Lógica que pergunta se quer ou não continuar
-                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                        scannerDecision = Console.ReadLine();
+                        Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                        string verRanking = Console.ReadLine();
 
-                        if (scannerDecision == "1") // Caso queira
+                        if (verRanking == "1")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            MostrarRanking(ranking);
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            //Resetar a lista (reiniciar game)
-                            numerosDisponiveis = verificaArrayBot.ToList();
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = false;
-                            continue;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
-                        else // Caso queira voltar ao menu
+
+                        if (verRanking == "2")
                         {
-                            // renumerando a matriz
-                            n = 0;
-                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            // Lógica que pergunta se quer ou não continuar
+                            Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                            scannerDecision = Console.ReadLine();
+
+                            if (scannerDecision == "1") // Caso queira
                             {
-                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                                 {
-                                    matriz[l, c] = Convert.ToString(n += 1);
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
                                 }
+                                //Resetar a lista (reiniciar game)
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = false;
+                                continue;
                             }
-                            Console.Clear(); // Limpa terminal
-                            contagemRodada = 0;
-                            vencedor = true;
+                            else // Caso queira voltar ao menu
+                            {
+                                // renumerando a matriz
+                                n = 0;
+                                for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                                {
+                                    for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                    {
+                                        matriz[l, c] = Convert.ToString(n += 1);
+                                    }
+                                }
+                                numerosDisponiveis = verificaArrayBot.ToList();
+                                Console.Clear(); // Limpa terminal
+                                contagemRodada = 0;
+                                vencedor = true;
+                            }
                         }
                     }
-
                 }
                 // Caso de velha
                 if (contagemRodada > 8)
                 {
                     Console.WriteLine("O jogo terminou em velha!");
-                    // Printando a matriz
+                    // Printando a matriz com cores
                     for (int l = 0; l < matriz.GetLength(0); l++)
                     {
                         Console.WriteLine("  ___    ___    ___");
                         for (int c = 0; c < matriz.GetLength(1); c++)
                         {
-                            Console.Write(" | " + matriz[l, c] + " | ");
-                            //Thread.Sleep(50); // só para efeito visual
+                            Console.Write(" | ");
+
+                            if (matriz[l, c] == "X")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;   // X em vermelho
+                                Console.Write("X");
+                                Console.ResetColor();
+                            }
+                            else if (matriz[l, c] == "O")
+                            {
+                                Console.ForegroundColor = ConsoleColor.Yellow;  // O em amarelo
+                                Console.Write("O");
+                                Console.ResetColor();
+                            }
+                            else
+                            {
+                                Console.Write(matriz[l, c]); // número normal
+                            }
+
+                            Console.Write(" | ");
                         }
                         Console.WriteLine();
                     }
@@ -3099,41 +5411,92 @@ while (true)
                         Console.WriteLine($"JOGADOR: {r.Key}     VITÓRIAS: {r.Value}");
                     }
 
-                    Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
-                    scannerDecision = Console.ReadLine();
+                    Console.WriteLine("Deseja mostrar o Ranking Gráfico? Sim(1) Não(2)");
+                    string verRanking = Console.ReadLine();
 
-                    if (scannerDecision == "1") // Caso queira
+                    if (verRanking == "1")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        MostrarRanking(ranking);
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            //Resetar a lista (reiniciar game)
+                            numerosDisponiveis = verificaArrayBot.ToList();
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        numerosDisponiveis = verificaArrayBot.ToList();
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = false;
-                        continue;
+                        else // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            numerosDisponiveis = verificaArrayBot.ToList();
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
-                    else // Caso queira voltar ao menu
+
+                    if (verRanking == "2")
                     {
-                        // renumerando a matriz
-                        n = 0;
-                        for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                        // Lógica que pergunta se quer ou não continuar
+                        Console.Write("Para continuar jogando digite 1, caso não, digite 2 para voltar ao menu: ");
+                        scannerDecision = Console.ReadLine();
+
+                        if (scannerDecision == "1") // Caso queira
                         {
-                            for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
                             {
-                                matriz[l, c] = Convert.ToString(n += 1);
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
                             }
+                            //Resetar a lista (reiniciar game)
+                            numerosDisponiveis = verificaArrayBot.ToList();
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = false;
+                            continue;
                         }
-                        numerosDisponiveis = verificaArrayBot.ToList();
-                        Console.Clear(); // Limpa terminal
-                        contagemRodada = 0;
-                        vencedor = true;
+                        else // Caso queira voltar ao menu
+                        {
+                            // renumerando a matriz
+                            n = 0;
+                            for (int l = 0; l < matriz.GetLength(0); l += 1) // .GetLength(0) pega a Quantidade de Linhas
+                            {
+                                for (int c = 0; c < matriz.GetLength(1); c += 1) // .GetLength(0) pega a Quantidade de Colunas
+                                {
+                                    matriz[l, c] = Convert.ToString(n += 1);
+                                }
+                            }
+                            numerosDisponiveis = verificaArrayBot.ToList();
+                            Console.Clear(); // Limpa terminal
+                            contagemRodada = 0;
+                            vencedor = true;
+                        }
                     }
                 }
                 Console.WriteLine("Número escolhido pelo Bot: " + vezBot);
